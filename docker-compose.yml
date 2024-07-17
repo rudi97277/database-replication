@@ -1,41 +1,73 @@
 version: "3.8"
 
 services:
-  mysql-master:
+  mysql-master1:
     image: mysql:8.0.37
-    container_name: mysql-master
+    container_name: mysql-master1
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: laravel
       MYSQL_USER: laraveluser
       MYSQL_PASSWORD: laravelpassword
     volumes:
-      - ./master/data:/var/lib/mysql
-      - ./master/config:/etc/mysql/conf.d
-      - ./master/master-init.sql:/docker-entrypoint-initdb.d/master-init.sql
+      - ./mysql/master1/data:/var/lib/mysql
+      - ./mysql/master1/config:/etc/mysql/conf.d
+      - ./mysql/master1/master1-init.sql:/docker-entrypoint-initdb.d/master-init.sql
     ports:
       - "3307:3306"
     networks:
-      - mysql_cluster
+      - database_cluster
 
-  mysql-slave:
+  mysql-master2:
     image: mysql:8.0.37
-    container_name: mysql-slave
+    container_name: mysql-master2
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_REPLICATION_USER: repluser
       MYSQL_DATABASE: laravel
       MYSQL_REPLICATION_PASSWORD: replpassword
     volumes:
-      - ./slave/data:/var/lib/mysql
-      - ./slave/config:/etc/mysql/conf.d
-      - ./slave/slave-init.sql:/docker-entrypoint-initdb.d/slave-init.sql
+      - ./mysql/master2/data:/var/lib/mysql
+      - ./mysql/master2/config:/etc/mysql/conf.d
+      - ./mysql/master2/master2-init.sql:/docker-entrypoint-initdb.d/master-init.sql
     ports:
       - "3308:3306"
     depends_on:
-      - mysql-master
+      - mysql-master1
     networks:
-      - mysql_cluster
+      - database_cluster
+
+  postgres-master1:
+    image: postgres:14.12
+    container_name: postgres-master1
+    environment:
+      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: laravel
+    ports:
+      - "5452:5432"
+    volumes:
+      - ./postgres/master1/data:/var/lib/postgresql/data
+      - ./postgres/master1/master1-init.sql:/docker-entrypoint-initdb.d/master-init.sql
+      - ./postgres/master1/config/postgresql.conf:/usr/share/postgresql/postgresql.conf.sample
+      - ./postgres/master1/config/pg_hba.conf:/usr/share/postgresql/14/pg_hba.conf.sample
+    networks:
+      - database_cluster
+
+  postgres-master2:
+    image: postgres:14.12
+    container_name: postgres-master2
+    environment:
+      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: laravel
+    ports:
+      - "5453:5432"
+    volumes:
+      - ./postgres/master2/data:/var/lib/postgresql/data
+      - ./postgres/master2/master2-init.sql:/docker-entrypoint-initdb.d/master-init.sql
+      - ./postgres/master2/config/postgresql.conf:/usr/local/share/postgresql/postgresql.conf.sample
+      - ./postgres/master2/config/pg_hba.conf:/usr/local/share/postgresql/pg_hba.conf.sample
+    networks:
+      - database_cluster
 
   haproxy:
     image: haproxy:latest
@@ -43,18 +75,16 @@ services:
     ports:
       - "3309:3309"
       - "3310:3310"
+      - "5442:5442"
+      - "5443:5443"
     volumes:
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     depends_on:
-      - mysql-master
-      - mysql-slave
+      - mysql-master1
+      - mysql-master2
     networks:
-      - mysql_cluster
+      - database_cluster
 
 networks:
-  mysql_cluster:
+  database_cluster:
     driver: bridge
-
-volumes:
-  master_data:
-  slave_data:

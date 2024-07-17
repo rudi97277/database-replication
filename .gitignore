@@ -1,2 +1,3 @@
-*/data
+mysql/*/data
 .env
+postgres/*/data
