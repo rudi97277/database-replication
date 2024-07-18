@@ -6,9 +6,10 @@ FLUSH TABLES WITH READ LOCK;
 SHOW MASTER STATUS;
 
 CHANGE MASTER TO 
-  MASTER_HOST='mysql-master',
+  MASTER_HOST='mysql-master1',
   MASTER_USER='repluser',
   MASTER_PASSWORD='replpassword',
   MASTER_LOG_FILE='mysql-bin.000003', 
-  MASTER_LOG_POS= 157;              
+  MASTER_LOG_POS= 157;       
+
 START SLAVE;
