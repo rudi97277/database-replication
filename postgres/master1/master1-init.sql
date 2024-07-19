@@ -12,4 +12,4 @@ GRANT SELECT ON ALL TABLES IN SCHEMA sanctum TO repluser;
 
 CREATE PUBLICATION mpub1 FOR ALL TABLES;
 
-CREATE SUBSCRIPTION msub1 CONNECTION 'host=172.21.238.5 dbname=laravel user=repluser password=replpassword' PUBLICATION mpub2;
+-- CREATE SUBSCRIPTION msub1 CONNECTION 'host=172.21.238.5 dbname=laravel user=repluser password=replpassword' PUBLICATION mpub2;
