@@ -1,19 +1,15 @@
-CREATE ROLE replicator WITH REPLICATION LOGIN PASSWORD 'password';
-GRANT CONNECT ON DATABASE laravel TO replicator;
-
+CREATE ROLE repluser WITH REPLICATION PASSWORD 'replpassword' LOGIN;
 \c laravel
+CREATE SCHEMA master;
+CREATE SCHEMA sanctum;
 
-CREATE SCHEMA IF NOT EXISTS master;
-CREATE SCHEMA IF NOT EXISTS sanctum;
+GRANT CONNECT ON DATABASE laravel TO repluser;
+GRANT USAGE ON SCHEMA master TO repluser;
+GRANT USAGE ON SCHEMA sanctum TO repluser;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO repluser;
+GRANT SELECT ON ALL TABLES IN SCHEMA master TO repluser;
+GRANT SELECT ON ALL TABLES IN SCHEMA sanctum TO repluser;
 
-GRANT USAGE ON SCHEMA public TO replicator;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO replicator;
+CREATE PUBLICATION mpub1 FOR ALL TABLES;
 
-GRANT USAGE ON SCHEMA master TO replicator;
-GRANT SELECT ON ALL TABLES IN SCHEMA master TO replicator;
-
-GRANT USAGE ON SCHEMA sanctum TO replicator;
-GRANT SELECT ON ALL TABLES IN SCHEMA sanctum TO replicator;
-
-CREATE PUBLICATION postgres_master1 FOR ALL TABLES;
--- CREATE SUBSCRIPTION sub_postgres_master1 CONNECTION 'host=172.21.238.5 dbname=laravel user=replicator password=password' PUBLICATION postgres_master2;
+CREATE SUBSCRIPTION msub1 CONNECTION 'host=172.21.238.5 dbname=laravel user=repluser password=replpassword' PUBLICATION mpub2;
