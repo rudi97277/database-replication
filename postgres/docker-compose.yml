@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  postgres-master1:
+    image: jgiannuzzi/postgres-bdr:latest
+    container_name: postgres-master1
+    environment:
+      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: laravel
+    ports:
+      - "5452:5432"
+    volumes:
+      - ./postgres/master1/data:/var/lib/postgresql/data
+      - ./postgres/master1/master1-init.sql:/docker-entrypoint-initdb.d/master-init.sql
+      - ./postgres/master1/config/postgresql.conf:/usr/share/postgresql/postgresql.conf.sample
+      - ./postgres/master1/config/pg_hba.conf:/usr/share/postgresql/14/pg_hba.conf.sample
+    networks:
+      database_cluster:
+        ipv4_address: 172.21.238.4
+
+  postgres-master2:
+    image: jgiannuzzi/postgres-bdr:latest
+    container_name: postgres-master2
+    environment:
+      POSTGRES_PASSWORD: rootpassword
+      POSTGRES_DB: laravel
+    ports:
+      - "5453:5432"
+    volumes:
+      - ./postgres/master2/data:/var/lib/postgresql/data
+      - ./postgres/master2/master2-init.sql:/docker-entrypoint-initdb.d/master-init.sql
+      - ./postgres/master2/config/postgresql.conf:/usr/share/postgresql/postgresql.conf.sample
+      - ./postgres/master2/config/pg_hba.conf:/usr/share/postgresql/14/pg_hba.conf.sample
+    networks:
+      database_cluster:
+        ipv4_address: 172.21.238.5
