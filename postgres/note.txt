@@ -1,0 +1,4 @@
+when setting the replication
+
+make sure the replication setup is successfull. 
+make sure the data is empty at first.

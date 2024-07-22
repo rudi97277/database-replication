@@ -1,21 +1,16 @@
-# Use the official PostgreSQL image as the base image
-FROM postgres:15 AS build
+# Stage 1: Build stage
+FROM postgres:14 AS builder
 
 # Install pglogical dependencies
 RUN apt-get update && apt-get install -y \
-    postgresql-15-pglogical
+    postgresql-14-pglogical
 
-# Use a slimmer image for the final stage
-FROM postgres:15
 
-# Copy the installed pglogical extension from the build stage
-COPY --from=build /usr/share/postgresql/15/extension/pglogical* /usr/share/postgresql/15/extension/
-COPY --from=build /usr/lib/postgresql/15/lib/pglogical* /usr/lib/postgresql/15/lib/
+# Stage 2: Final stage
+FROM postgres:14
 
-# Set environment variables
-ENV POSTGRES_USER=admin \
-    POSTGRES_PASSWORD=password \
-    POSTGRES_DB=mydb
+COPY --from=builder /usr/share/postgresql/14/extension/pglogical* /usr/share/postgresql/14/extension/
+COPY --from=builder /usr/lib/postgresql/14/lib/pglogical* /usr/lib/postgresql/14/lib/
 
-# Expose the PostgreSQL port
-EXPOSE 5432
+COPY ./config/pg_hba.conf /usr/share/postgresql/14/pg_hba.conf.sample
+
