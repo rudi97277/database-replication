@@ -23,8 +23,40 @@
 CREATE EXTENSION pglogical;
 SELECT pglogical.create_node(node_name := 'node1', dsn := 'host=172.21.238.4 port=5432 dbname=laravel user=postgres password=rootpassword');
 
-SELECT pglogical.create_replication_set('master1_repset');
-SELECT pglogical.replication_set_add_all_tables('master1_repset', ARRAY['public','master','sanctum']);
-SELECT pglogical.replication_set_add_all_sequences('master1_repset',ARRAY['public','master','sanctum']);
+-- SELECT pglogical.create_replication_set('master1_repset');
+-- SELECT pglogical.replication_set_add_all_tables('master1_repset', ARRAY['public','master','sanctum']);
+-- SELECT pglogical.replication_set_add_all_sequences('master1_repset',ARRAY['public','master','sanctum'],true);
+-- UPDATE pglogical.sequence_state SET cache_size = 0
 
-SELECT pglogical.create_subscription(subscription_name := 'subscribe_to_node2', provider_dsn := 'host=172.21.238.5 port=5432 dbname=laravel user=postgres password=rootpassword',replication_sets := ARRAY['master2_repset']);
+-- CREATE OR REPLACE FUNCTION sync_sequences() RETURNS trigger AS $$
+-- BEGIN
+--     PERFORM pglogical.synchronize_sequence(seqoid)
+--     FROM pglogical.sequence_state;
+
+--     RETURN NEW;
+-- END;
+-- $$ LANGUAGE plpgsql;
+
+
+-- DO $$ 
+-- DECLARE
+--     table_name RECORD;
+-- BEGIN
+--     FOR table_name IN
+--         SELECT schemaname, tablename 
+--         FROM pg_tables 
+--         WHERE schemaname IN ('master', 'sanctum', 'public')
+--     LOOP
+--         EXECUTE format('
+--             CREATE TRIGGER sync_sequences_after_insert
+--             AFTER INSERT ON %I.%I
+--             FOR EACH ROW
+--             EXECUTE FUNCTION sync_sequences();', 
+--             table_name.schemaname, table_name.tablename);
+--     END LOOP;
+-- END $$;
+
+-- SELECT pglogical.create_subscription(subscription_name := 'subscribe_to_node2', provider_dsn := 'host=172.21.238.5 port=5432 dbname=laravel user=postgres password=rootpassword',replication_sets := ARRAY['master2_repset']);
+
+-- TO synchronize sequence immediately, implemented in trigger
+-- select pglogical.synchronize_sequence( seqoid ) from pglogical.sequence_state;
