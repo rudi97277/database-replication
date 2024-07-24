@@ -1,12 +1,29 @@
+-- CREATE ROLE repluser WITH REPLICATION PASSWORD 'replpassword' LOGIN;
 \c laravel
+-- CREATE SCHEMA master;
+-- CREATE SCHEMA sanctum;
+
+-- GRANT CONNECT ON DATABASE laravel TO repluser;
+-- GRANT USAGE ON SCHEMA master TO repluser;
+-- GRANT USAGE ON SCHEMA sanctum TO repluser;
+-- GRANT SELECT ON ALL TABLES IN SCHEMA public TO repluser;
+-- GRANT SELECT ON ALL TABLES IN SCHEMA master TO repluser;
+-- GRANT SELECT ON ALL TABLES IN SCHEMA sanctum TO repluser;
+
+-- CREATE PUBLICATION mpub2 FOR ALL TABLES;
+
+
+-- CREATE SUBSCRIPTION msub2 CONNECTION 'host=172.21.238.4 dbname=laravel user=repluser password=replpassword' PUBLICATION mpub1;
+
+-- CREATE EXTENSION IF NOT EXISTS btree_gist;
+-- CREATE EXTENSION IF NOT EXISTS bdr;
+
+-- SELECT bdr.bdr_group_join(local_node_name := 'master2', node_external_dsn := 'host=172.21.238.5 port=5432 dbname=laravel password=rootpassword', join_using_dsn := 'host=172.21.238.4 port=5432 dbname=laravel password=rootpassword');
+
+-- SELECT * FROM pglogical.show_subscription_status();
 
 CREATE EXTENSION pglogical;
 SELECT pglogical.create_node(node_name := 'node2', dsn := 'host=172.21.238.5 port=5432 dbname=laravel user=postgres password=rootpassword');
-
--- RUN THIS SQL CODE AFTER MIGRATION FINISH
--- MAKE SURE THE DATA IS EMPTY ON BOTH DATABASE
-
--- 1. SETUP REPLICATION, run this code each server
 
 -- SELECT pglogical.create_replication_set('master2_repset');
 -- SELECT pglogical.replication_set_add_all_tables('master2_repset', ARRAY['public','master','sanctum']);
@@ -41,17 +58,10 @@ SELECT pglogical.create_node(node_name := 'node2', dsn := 'host=172.21.238.5 por
 --     END LOOP;
 -- END $$;
 
--- 2. SUBSCRIBE, run this after you run part 1 on all the server
-
 -- SELECT pglogical.create_subscription(subscription_name := 'subscribe_to_node1', provider_dsn := 'host=172.21.238.4 port=5432 dbname=laravel user=postgres password=rootpassword',replication_sets := ARRAY['master1_repset']);
 
--- HELPER SQL CODE
-
--- to synchronize sequence immediately, implemented in trigger
+-- TO synchronize sequence immediately, implemented in trigger
 -- select pglogical.synchronize_sequence( seqoid ) from pglogical.sequence_state;
-
--- to show subscription status
--- SELECT * FROM pglogical.show_subscription_status();
 
 
 
