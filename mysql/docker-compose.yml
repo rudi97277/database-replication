@@ -2,7 +2,9 @@ version: "1.0"
 
 services:
   mysql-master1:
-    image: mysql:8.0.37
+    build: 
+      context: ./master1
+      dockerfile: Dockerfile
     container_name: mysql-master1
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
@@ -15,12 +17,16 @@ services:
       - ./master1/master1-init.sql:/docker-entrypoint-initdb.d/master-init.sql
     ports:
       - "3307:3306"
+      - "9991:9999"
     networks:
       database_cluster:
         ipv4_address: 172.21.238.2
+    entrypoint: ["/bin/sh", "-c", "/usr/local/bin/healthcheck.sh"]
 
   mysql-master2:
-    image: mysql:8.0.37
+    build: 
+      context: ./master2
+      dockerfile: Dockerfile
     container_name: mysql-master2
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
@@ -33,11 +39,13 @@ services:
       - ./master2/master2-init.sql:/docker-entrypoint-initdb.d/master-init.sql
     ports:
       - "3308:3306"
+      - "9992:9999"
     depends_on:
       - mysql-master1
     networks:
       database_cluster:
         ipv4_address: 172.21.238.3
+    entrypoint: ["/bin/sh", "-c", "/usr/local/bin/healthcheck.sh"]
 
 networks:
   database_cluster:

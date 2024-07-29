@@ -10,7 +10,7 @@ SELECT pglogical.create_node(node_name := 'node1', dsn := 'host=172.21.238.4 por
 
 -- SELECT pglogical.create_replication_set('master1_repset');
 -- SELECT pglogical.replication_set_add_all_tables('master1_repset', ARRAY['public','master','sanctum']);
--- SELECT pglogical.replication_set_add_all_sequences('master1_repset',ARRAY['public','master','sanctum'],true);
+-- SELECT pglogical.replication_set_add_all_sequences(set_name := 'master1_repset', schema_names := ARRAY['public','master','sanctum'],synchronize_data := true);
 -- UPDATE pglogical.sequence_state SET cache_size = 0;
 
 -- CREATE OR REPLACE FUNCTION sync_sequences() RETURNS trigger AS $$
